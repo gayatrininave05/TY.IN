@@ -16,7 +16,7 @@
 ##  Installation Guide
 
 # Clone the repository
-git clone https://github.com/yourusername/tu.in.git
+git clone https://github.com/gayatrininave05/TY.IN.git
 
 # Navigate to the project directory
 cd tu.in
@@ -39,7 +39,7 @@ Agar tum is project me contribute karna chahte ho, toh pull request bhejo! 😊
 ## 📧 Contact
 - **Developer:** Gyatatri Ninave
 - **Email:** gayatrininave83@gmail.com
-- **LinkedIn:** [Kirti Lingayat](https://www.linkedin.com/in/gayatri-8805565393)
+- **LinkedIn:** [Gayatri Ninave](https://www.linkedin.com/in/gayatri-8805565393)
 
 ---
 💡 *"Practice makes perfect! Test your typing speed today on TY.in!"*
