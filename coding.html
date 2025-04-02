@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Code Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #007bff;
+        }
+
+        pre {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+            white-space: pre-wrap;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-top: 10px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s, background 0.3s;
+        }
+
+        #resultBtn {
+            background: #007bff;
+            color: white;
+        }
+
+        #resultBtn:hover {
+            background: #0056b3;
+            transform: scale(1.1);
+        }
+
+        #backHomeBtn {
+            background: #ff9900;
+            color: white;
+        }
+
+        #backHomeBtn:hover {
+            background: #cc7a00;
+            transform: scale(1.1);
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 2px solid #007bff;
+            background: #e9ecef;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        select:hover {
+            background: #007bff;
+            color: white;
+        }
+
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            transition: transform 0.7s ease-in-out, opacity 0.7s ease-in-out;
+            opacity: 0;
+        }
+
+        .popup.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        /* Animation for background */
+    @keyframes gradientBackground {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    body {
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4, #a1c4fd, #c2e9fb);
+      background-size: 400% 400%;
+      animation: gradientBackground 10s ease infinite;
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Typing Code Test</h1>
+        <select id="languageSelector">
+            <option value="JavaScript">JavaScript</option>
+            <option value="Python">Python</option>
+            <option value="Java">Java</option>
+            <option value="Cpp">C++</option>
+            <option value="HTML">HTML</option>
+        </select>
+        <pre id="codeSnippet"></pre>
+        <textarea id="typingArea" placeholder="Start typing here..."></textarea>
+        <div class="buttons">
+            <button id="resultBtn">Result</button>
+            <button id="backHomeBtn" onclick="goBack()">Back Home</button>
+        </div>
+        <div class="stats">
+            <p>Time: <span id="timer">0</span> sec</p>
+            <p>Errors: <span id="errors">0</span></p>
+            <p>WPM: <span id="wpm">0</span></p>
+            <p>Accuracy: <span id="accuracy">100</span>%</p>
+        </div>
+        <div id="resultPopup" class="popup">
+            <h2>Final Results</h2>
+            <p>WPM: <span id="finalWpm">0</span></p>
+            <p>Errors: <span id="finalErrors">0</span></p>
+            <p>Accuracy: <span id="finalAccuracy">100</span>%</p>
+            <button onclick="closePopup()">Cancel</button>
+            <button onclick="closePopup()">OK</button>
+        </div>
+    </div>
+    
+    <script>
+        const codeSnippets = {
+            JavaScript: "function greet() { console.log('Hello, World!'); } greet();",
+            Python: "def greet():\n    print('Hello, World!')\n\ngreet()",
+            Java: "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Hello, World!\");\n    }\n}",
+            Cpp: "#include <iostream>\nusing namespace std;\nint main() {\n    cout << \"Hello, World!\" << endl;\n    return 0;\n}",
+            HTML: "<!DOCTYPE html>\n<html>\n<head>\n    <title>Hello World</title>\n</head>\n<body>\n    <h1>Hello, World!</h1>\n</body>\n</html>"
+        };
+
+        let timerInterval, startTime, typedCharacters = 0, errors = 0;
+
+        function loadNewCode() {
+            const language = document.getElementById("languageSelector").value;
+            document.getElementById("codeSnippet").textContent = codeSnippets[language];
+            document.getElementById("typingArea").value = "";
+        }
+
+        document.getElementById("typingArea").addEventListener("input", function() {
+            if (!timerInterval) {
+                startTime = Date.now();
+                timerInterval = setInterval(() => {
+                    document.getElementById("timer").textContent = Math.floor((Date.now() - startTime) / 1000);
+                }, 1000);
+            }
+        });
+
+        document.getElementById("resultBtn").addEventListener("click", function() {
+            const time = parseInt(document.getElementById("timer").textContent);
+            const words = document.getElementById("typingArea").value.split(' ').length;
+            const wpm = time > 0 ? Math.round((words / time) * 60) : 0;
+            document.getElementById("finalWpm").textContent = wpm;
+            document.getElementById("resultPopup").classList.add("show");
+        });
+
+        function closePopup() {
+            document.getElementById("resultPopup").classList.remove("show");
+        }
+
+        document.getElementById("languageSelector").addEventListener("change", loadNewCode);
+        loadNewCode();
+
+         function goBack() {
+            window.history.back();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Special Character Typing Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #bfdbfe;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-top: 10px;
+            padding: 10px;
+            border: 2px solid #3b82f6;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .stats, .controls {
+            margin-top: 10px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .start { background: #3b82f6; color: white; }
+        .reset { background: #ef4444; color: white; }
+        .result { background: #10b981; color: white; }
+        .bold { font-weight: bold; }
+
+        /* Animation for background */
+    @keyframes gradientBackground {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    body {
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4, #a1c4fd, #c2e9fb);
+      background-size: 400% 400%;
+      animation: gradientBackground 10s ease infinite;
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Special Character Typing Test</h1>
+        <pre id="passage" class="bold"></pre>
+        <textarea id="input" placeholder="Start typing here..."></textarea>
+        <div class="controls">
+            <button id="startBtn" class="start" onclick="toggleTyping()">Start</button>
+            <button class="reset" onclick="loadNewPassage()">New Passage</button>
+            <button class="result" onclick="showResult()">Result</button>
+        </div>
+        <div class="stats">
+            <p>Time: <span id="timer">0</span> sec</p>
+            <p>Errors: <span id="errors">0</span></p>
+            <p>WPM: <span id="wpm">0</span></p>
+            <p>Accuracy: <span id="accuracy">100</span>%</p>
+        </div>
+    </div>
+    <script>
+        const specialCharacters = "!@#$%^&*()_+-=[]{}|;:'\",.<>?/`~";
+        let currentPassage = "";
+        let inputText = "";
+        let timer = 0;
+        let isRunning = false;
+        let errors = 0;
+        let wpm = 0;
+        let accuracy = 100;
+        let interval;
+        let startTime;
+
+        function loadNewPassage() {
+            currentPassage = specialCharacters.split('').sort(() => 0.5 - Math.random()).join('');
+            document.getElementById("passage").innerHTML = `<span class='bold'>${currentPassage}</span>`;
+            document.getElementById("input").value = "";
+            document.getElementById("timer").textContent = "0";
+            document.getElementById("errors").textContent = "0";
+            document.getElementById("wpm").textContent = "0";
+            document.getElementById("accuracy").textContent = "100";
+            clearInterval(interval);
+            timer = 0;
+            errors = 0;
+            wpm = 0;
+            accuracy = 100;
+            isRunning = false;
+            document.getElementById("startBtn").textContent = "Start";
+        }
+
+        function toggleTyping() {
+            if (isRunning) {
+                clearInterval(interval);
+                isRunning = false;
+                document.getElementById("startBtn").textContent = "Start";
+            } else {
+                isRunning = true;
+                startTime = Date.now();
+                interval = setInterval(() => {
+                    timer++;
+                    document.getElementById("timer").textContent = timer;
+                }, 1000);
+                document.getElementById("startBtn").textContent = "Pause";
+            }
+        }
+
+        document.getElementById("input").addEventListener("input", function () {
+            if (!isRunning) toggleTyping();
+            inputText = this.value;
+            errors = inputText.split('').reduce((acc, char, i) => acc + (char !== currentPassage[i] ? 1 : 0), 0);
+            document.getElementById("errors").textContent = errors;
+            const wordsTyped = inputText.length / 5;
+            const minutes = (Date.now() - startTime) / 60000;
+            wpm = Math.round(wordsTyped / minutes) || 0;
+            document.getElementById("wpm").textContent = wpm;
+            accuracy = 100 - Math.round((errors / currentPassage.length) * 100);
+            document.getElementById("accuracy").textContent = accuracy;
+        });
+
+        function showResult() {
+            stopTyping();
+            alert(`Typing Test Completed!\nTime: ${timer} sec\nErrors: ${errors}\nWPM: ${wpm}\nAccuracy: ${accuracy}%`);
+            setTimeout(() => {
+                window.history.back(); // Redirects back to the previous page
+            }, 2000); // Delay to allow the user to see the result before redirection
+        }
+
+        function stopTyping() {
+            isRunning = false;
+            clearInterval(interval);
+            document.getElementById("startBtn").textContent = "Start";
+        }
+
+        loadNewPassage();
+
+        
+    </script>
+</body>
+</html>

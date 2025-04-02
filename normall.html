@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typing Practice</title>
+  <style>
+    /* General Styles */
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .container {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      max-width: 600px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    #passage-display {
+      font-size: 1.5rem;
+      margin: 20px 0;
+      color: #333;
+      line-height: 1.6;
+      text-align: left;
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+    }
+
+    #word-input {
+      padding: 15px;
+      font-size: 1.2rem;
+      width: 80%;
+      border: 2px solid #ff6f61;
+      border-radius: 10px;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    #word-input:focus {
+      border-color: #ff3b2f;
+    }
+
+    #message {
+      font-size: 1.2rem;
+      margin: 20px 0;
+      color: #333;
+    }
+
+    #timer {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #ff6f61;
+      margin: 10px 0;
+    }
+
+    #medal-display {
+      font-size: 1.2rem;
+      margin: 20px 0;
+      color: #333;
+    }
+
+    .medal {
+      display: inline-block;
+      margin: 0 5px;
+      font-size: 1.5rem;
+    }
+
+    .gold {
+      color: #ffd700;
+    }
+
+    .silver {
+      color: #c0c0c0;
+    }
+
+    .bronze {
+      color: #cd7f32;
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      background: #ff6f61;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #ff3b2f;
+    }
+
+    #new-passage-input {
+      padding: 10px;
+      font-size: 1rem;
+      width: 70%;
+      border: 2px solid #ff6f61;
+      border-radius: 10px;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    #new-passage-input:focus {
+      border-color: #ff3b2f;
+    }
+
+    /* Animation for background */
+    @keyframes gradientBackground {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    body {
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4, #a1c4fd, #c2e9fb);
+      background-size: 400% 400%;
+      animation: gradientBackground 10s ease infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Typing Practice</h1>
+    <p>Type the passage below:</p>
+    <div id="passage-display"></div>
+    <input type="text" id="word-input" placeholder="Start typing..." autofocus>
+    <p id="message"></p>
+    <p id="timer">Time: 0s</p>
+    <p id="medal-display">Medals: <span class="medal gold">🥇</span> <span class="medal silver">🥈</span> <span class="medal bronze">🥉</span></p>
+    <div class="button-container">
+      <button id="start-button">Start New Passage</button>
+      <button id="home-button" onclick="goBack()">Back Home</button>
+    </div>
+    <div style="margin-top: 20px;">
+      <input type="text" id="new-passage-input" placeholder="Add a new passage...">
+      <button id="add-passage-button">Add Passage</button>
+    </div>
+  </div>
+
+  <!-- Sound Effects -->
+  <audio id="typing-sound" src="https://assets.mixkit.co/active_storage/sfx/1127/1127-preview.mp3"></audio>
+
+  <script>
+    const passages = {
+      short: "The quick brown fox jumps over the lazy dog.",
+      medium: "Programming is the art of telling another human what one wants the computer to do. It requires logic, creativity, and patience.",
+      long: "In the world of technology, typing is an essential skill. Whether you're coding, writing, or communicating, being able to type quickly and accurately can save you a lot of time. Practice makes perfect, so keep typing!"
+    };
+
+    // Load custom passages from local storage
+    const savedPassages = JSON.parse(localStorage.getItem("customPassages")) || {};
+    Object.assign(passages, savedPassages);
+
+    let currentPassage = "";
+    let startTime;
+    let timerInterval;
+    let medals = { gold: 0, silver: 0, bronze: 0 };
+
+    const passageDisplay = document.getElementById("passage-display");
+    const wordInput = document.getElementById("word-input");
+    const message = document.getElementById("message");
+    const timerDisplay = document.getElementById("timer");
+    const medalDisplay = document.getElementById("medal-display");
+    const startButton = document.getElementById("start-button");
+    const homeButton = document.getElementById("home-button");
+    const newPassageInput = document.getElementById("new-passage-input");
+    const addPassageButton = document.getElementById("add-passage-button");
+    const typingSound = document.getElementById("typing-sound");
+
+    // Initialize the game
+    function init() {
+      showPassage(); // Show a random passage
+      wordInput.addEventListener("input", startMatch);
+      wordInput.addEventListener("keydown", playTypingSound);
+      startButton.addEventListener("click", startNewPassage);
+      homeButton.addEventListener("click", resetGame);
+      addPassageButton.addEventListener("click", addNewPassage);
+    }
+
+    // Display a random passage
+    function showPassage() {
+      const passageKeys = Object.keys(passages);
+      const randomKey = passageKeys[Math.floor(Math.random() * passageKeys.length)];
+      currentPassage = passages[randomKey];
+      passageDisplay.textContent = currentPassage;
+      wordInput.value = ""; // Clear the input field
+      message.textContent = ""; // Clear the message
+      startTimer();
+    }
+
+    // Start matching the input with the passage
+    function startMatch() {
+      if (wordInput.value === currentPassage) {
+        message.textContent = "Correct!";
+        message.style.color = "#4caf50"; // Green for correct
+        stopTimer();
+        awardMedal();
+        setTimeout(() => {
+          startNewPassage(); // Start a new passage after a delay
+        }, 2000); // Wait 2 seconds before resetting
+      } else if (currentPassage.startsWith(wordInput.value)) {
+        message.textContent = "";
+      } else {
+        message.textContent = "Incorrect!";
+        message.style.color = "#ff3b2f"; // Red for incorrect
+      }
+    }
+
+    // Play typing sound
+    function playTypingSound() {
+      typingSound.currentTime = 0; // Reset sound to start
+      typingSound.play();
+    }
+
+    // Start the timer
+    function startTimer() {
+      startTime = Date.now();
+      timerInterval = setInterval(() => {
+        const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+        timerDisplay.textContent = `Time: ${elapsedTime}s`;
+      }, 1000);
+    }
+
+    // Stop the timer
+    function stopTimer() {
+      clearInterval(timerInterval);
+    }
+
+    // Award medals based on time
+    function awardMedal() {
+      const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+      if (elapsedTime <= 10) {
+        medals.gold++;
+        message.textContent += " 🥇 Gold Medal!";
+      } else if (elapsedTime <= 20) {
+        medals.silver++;
+        message.textContent += " 🥈 Silver Medal!";
+      } else {
+        medals.bronze++;
+        message.textContent += " 🥉 Bronze Medal!";
+      }
+      updateMedalDisplay();
+    }
+
+    // Update medal display
+    function updateMedalDisplay() {
+      medalDisplay.innerHTML = `Medals: <span class="medal gold">🥇 ${medals.gold}</span> <span class="medal silver">🥈 ${medals.silver}</span> <span class="medal bronze">🥉 ${medals.bronze}</span>`;
+    }
+
+    // Start a new passage
+    function startNewPassage() {
+      stopTimer();
+      showPassage(); // Show a random passage
+    }
+
+    // Reset the game (back to home)
+    function resetGame() {
+      stopTimer();
+      medals = { gold: 0, silver: 0, bronze: 0 };
+      updateMedalDisplay();
+      showPassage(); // Show a random passage
+      timerDisplay.textContent = "Time: 0s";
+      message.textContent = "";
+    }
+
+    // Add a new passage
+    function addNewPassage() {
+      const newPassage = newPassageInput.value.trim();
+      if (newPassage) {
+        const passageKey = `custom${Object.keys(passages).length + 1}`;
+        passages[passageKey] = newPassage;
+        newPassageInput.value = ""; // Clear the input field
+        alert("New passage added successfully!");
+
+        // Save custom passages to local storage
+        localStorage.setItem("customPassages", JSON.stringify(passages));
+      } else {
+        alert("Please enter a valid passage.");
+      }
+    }
+   function goBack() {
+            window.history.back();
+        }
+    // Start the game
+    init();
+  </script>
+</body>
+</html>
